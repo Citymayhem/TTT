@@ -38,9 +38,9 @@ PS.Config.CalculateBuyPrice = function(ply, item)
 	-- 25% off for the 'donators' group
 	-- if ply:IsUserGroup('donators') then return math.Round(item.Price * 0.75) end
 	if !(ply:IsUserGroup("user"))then
-		if(!ply:IsUserGroup("member"))then return math.Round(item.Price * 0.75)
-		else return math.Round(item.Price * 0.9) end
-	end	
+                if(!ply:IsUserGroup("member"))then return math.Round(item.Price * 0.75)
+                else return math.Round(item.Price * 0.9) end
+        end
 	return item.Price
 end
 
