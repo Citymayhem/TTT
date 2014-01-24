@@ -7,10 +7,14 @@ http://www.badgercode.co.uk
 
 ##Credit
 * Santa hat- http://www.garrysmod.org/downloads/?a=view&id=85708
-* Scar20- https://github.com/vice655/scar-20
 * Ulysess Mod- https://github.com/Nayruden/Ulysses/
 * Mapvote- https://github.com/tyrantelf/gmod-mapvote
 * Pointshop- https://github.com/adamdburton/pointshop
+* Credit to [SilentK](http://github.com/vice655/ "SilentK's GitHub") for the AUG, Explosive Grenades, M4A1S, P90, Scar20, Tripmine, and for the original idea and stats for the Dual Elites.
+* Credit to TC224 for the original stats for the TMP, AK47, AWP and Pump Shotgun.  
+* Credit to Maccat for the idea of the MP5.  
+* Massive thanks to Dangerous Dan for adding weapon spawns to the maps for these new weapons.  
+* Mr. R for helping me with the kill icons  
 
 
 ##Includes
