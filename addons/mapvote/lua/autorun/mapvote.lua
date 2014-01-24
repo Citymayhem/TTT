@@ -9,8 +9,9 @@ MapVoteConfigDefault = {
     EnableCooldown = true,
     MapsBeforeRevote = 3,
     RTVPlayerCount = 3,
-    MapPrefixes = {"ttt_"}
-    }
+    MapPrefixes = {"ttt_"},
+	GapBetweenVotes = 0
+}
 --Default Config
 
 hook.Add( "Initialize", "MapVoteConfigSetup", function()
@@ -29,7 +30,9 @@ function MapVote.HasExtraVotePower(ply)
 		return true
 	end 
     ]]
-
+	if ULib and ULib.ucl.query(ply,"mapvote_extra_power")then
+		return true
+	end
 	return false
 end
 

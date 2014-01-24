@@ -39,6 +39,10 @@ else
     MapVote.Config = {}
 end
 
+if(not ConVarExists("mapvote_maps_til_vote"))then
+	local mapskipcvar = CreateConVar("mapvote_maps_til_vote", tostring(MapVote.Config.GapBetweenVotes or 0))
+end
+
 function CoolDownDoStuff()
     cooldownnum = MapVote.Config.MapsBeforeRevote or 3
 
@@ -56,6 +60,7 @@ function CoolDownDoStuff()
 end
 
 function MapVote.Start(length, current, limit, prefix)
+	RunConsoleCommand("mapvote_maps_til_vote", tostring((MapVote.Config.GapBetweenVotes or 0) + 1))
     current = current or MapVote.Config.AllowCurrentMap or false
     length = length or MapVote.Config.TimeLimit or 28
     limit = limit or MapVote.Config.MapLimit or 24

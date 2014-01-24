@@ -1,4 +1,8 @@
 local CATEGORY_NAME = "MapVote"
+
+if SERVER then
+	ULib.ucl.registerAccess("mapvote_extra_power", "moderator","Player's voting power doubles for the end of last map round map vote.",CATEGORY_NAME)
+end
 ------------------------------ VoteMap ------------------------------
 function AMB_mapvote( calling_ply, votetime, should_cancel )
 	if not should_cancel then

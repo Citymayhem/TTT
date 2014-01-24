@@ -4,21 +4,24 @@ hook.Add( "Initialize", "AutoTTTMapVote", function()
            -- Check for mapswitch
            local rounds_left = math.max(0, GetGlobalInt("ttt_rounds_left", 6) - 1)
            SetGlobalInt("ttt_rounds_left", rounds_left)
- 
            local time_left = math.max(0, (GetConVar("ttt_time_limit_minutes"):GetInt() * 60) - CurTime())
-           local switchmap = false
-           local nextmap = string.upper(game.GetMapNext())
- 
-            if rounds_left <= 0 then
-              LANG.Msg("limit_round", {mapname = nextmap})
-              switchmap = true
-            elseif time_left <= 0 then
-              LANG.Msg("limit_time", {mapname = nextmap})
-              switchmap = true
-            end
-            if switchmap then
-                timer.Stop("end2prep")
-                MapVote.Start(nil, nil, nil, nil)
+           
+		   if rounds_left <= 0 then
+		      timer.Stop("end2prep")
+			  local mapskip = GetConVar("mapvote_maps_til_vote")
+			  local mapsleft = mapskip:GetInt() - 1
+			  if(mapsleft <= 0)then
+			     print("[MAPVOTE] Time for map vote. Mapsleft is <= 0")
+				 MapVote.Start(nil, nil, nil, nil)
+			  else
+			     RunConsoleCommand("mapvote_maps_til_vote",mapsleft)
+				 Msg(mapsleft," maps(s) remaining before a map vote.")
+				 
+				 local nextmap = string.upper(game.GetMapNext())
+				 if rounds_left <= 0 then LANG.Msg("limit_round", {mapname = nextmap})
+				 elseif time_left <= 0 then LANG.Msg("limit_time", {mapname = nextmap}) end
+				 timer.Simple(28,game.LoadNextMap)
+              end
             end
         end
       end
