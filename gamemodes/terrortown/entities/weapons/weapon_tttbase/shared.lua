@@ -339,6 +339,7 @@ end
 function SWEP:GetPrimaryCone()
    local cone = self.Primary.Cone or 0.2
    -- 10% accuracy bonus when sighting
+   if self:GetIronsights() and self.Secondary.Cone then return self.Secondary.Cone  end
    return self:GetIronsights() and (cone * 0.85) or cone
 end
 

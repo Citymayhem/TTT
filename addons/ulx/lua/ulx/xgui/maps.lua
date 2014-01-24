@@ -81,7 +81,7 @@ function maps.updateVoteMaps()
 
 	maps.list:Clear()
 
-	if LocalPlayer():query( "ulx map" ) then --Show all maps for admins who have access to change the level
+	if LocalPlayer():query( "ulx seeallmaps" ) then --Show all maps for admins who have access to change the level
 		maps.maplabel:SetText( "Server Maps (Votemaps are highlighted)" )
 		for _,v in ipairs( ulx.maps ) do
 			maps.addMaptoList( v, lastselected )
