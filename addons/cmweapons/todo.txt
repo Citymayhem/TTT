@@ -1,0 +1,7 @@
+1. Possible fix for Scar's crotch position- http://www.facepunch.com/threads/851426-How-to-fix-CSS-world-models-for-HL2-Gmod-and-Smod
+2. MP5 and AUG sound bug
+	Possibly try a different sound file? If available.
+3. Add dev weapons to dev branch
+	Sticky C4
+	Riot Shield
+	addons/cmweapons/lua/weapons/zip file
