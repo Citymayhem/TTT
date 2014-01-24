@@ -1,0 +1,14 @@
+VertexLitGeneric
+{
+$phongdisablehalflambert 1
+$baseTexture "models\weapons\v_models\go_scar/scope_scar20"
+$bumpMap "models\weapons\v_models\go_scar/scope_normal"
+$phong 1
+$phongBoost ".4"
+$phongExponent 155
+$phongTint "[1 .2 0]"
+$phongFresnelRanges "[.1 .1 1]"
+$envmap env_cubemap
+$envmapfresnel 1
+$envmaptint "[.09 .02 0]"
+}
