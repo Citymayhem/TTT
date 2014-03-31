@@ -26,9 +26,9 @@ SWEP.Primary.Automatic   = true
 SWEP.Primary.Damage      = 12
 SWEP.Primary.Cone        = 0.01
 SWEP.Primary.Ammo        = "smg1"
-SWEP.Primary.ClipSize    = 35
+SWEP.Primary.ClipSize    = 32
 SWEP.Primary.ClipMax     = 70
-SWEP.Primary.DefaultClip = 25
+SWEP.Primary.DefaultClip = 32
 SWEP.Primary.Sound       = Sound( "Weapon_GALIL.Single" )
 
 SWEP.IronSightsPos = Vector( -5.05, 0, 2.4 )
