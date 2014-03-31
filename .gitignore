@@ -1,7 +1,5 @@
 /*
 !/addons
-!/gamemodes/
-/gamemodes/*
-!/gamemodes/terrortown
 !/README
 !/.gitignore
+!/*.md
