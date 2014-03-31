@@ -1,2 +1,0 @@
-Map cycle maps are listed in the Recent Maps text file
-	Should only contain maps that have been voted for

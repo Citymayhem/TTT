@@ -1,5 +1,5 @@
 ITEM.Name = 'Darth\'s Mug'
-ITEM.Price = 0
+ITEM.Price = 10000
 ITEM.Model = 'models/props/cs_office/coffee_mug.mdl'
 ITEM.Bone = 'ValveBiped.Bip01_R_Hand'
 
@@ -18,9 +18,4 @@ function ITEM:ModifyClientsideModel(ply, model, pos, ang)
 	ang:RotateAroundAxis(ang:Right(),180)
 	ang:RotateAroundAxis(ang:Forward(),10)
 	return model, pos, ang
-end
-
-function ITEM:CanPlayerBuy(ply)
-	if(ply:SteamID() == "STEAM_0:0:47561415")then return true end
-	return false
 end

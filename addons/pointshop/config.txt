@@ -1,0 +1,15 @@
+/lua/sh_config.lua
+Line 26: 
+	PS.Config.PointsName = 'Cookies' -- What are the points called?
+Line 27: 
+	PS.Config.SortItemsBy = 'Price' -- How are items sorted? Set to 'Price' to sort by price.
+	
+Under PS.Config.CalculateBuyPrice = function(ply, item)
+	if !(ply:IsUserGroup("user"))then
+		if(!ply:IsUserGroup("member"))then return math.Round(item.Price * 0.75)
+		else return math.Round(item.Price * 0.9) end
+	end
+	return item.Price
+	
+Delete everything in server's pointshop/lua/items
+Replace with items in cmttt repository's /addons/pointshop/lua/items
