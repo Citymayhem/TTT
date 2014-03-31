@@ -36,3 +36,5 @@ resource.AddFile("materials/models/foodnhouseholditems/mcdmisc.vmt")
 resource.AddFile("models/foodnhouseholditems/mcdfrenchfries.mdl")
 resource.AddSingleFile("models/foodnhouseholditems/mcdfrenchfries.vvd")
 resource.AddSingleFile("models/foodnhouseholditems/mcdfrenchfries.sw.vtx")
+
+
