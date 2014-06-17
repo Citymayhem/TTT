@@ -90,7 +90,7 @@ Data variables:
 	Items should be a table where the item names are the index
 		and the values are sub-tables. Sub tables:
 			Index		Value
-			Modifiers = {modifications table}
+			Modifiers = {modifications table} (NEVER nil. Use empty table {} instead.)
 			Equipped = true/false
 		e.g. items[item_id] = { 
 				Modifiers = {
@@ -103,6 +103,12 @@ Data variables:
 				}, 
 				Equipped = false 
 			}
+			
+Debug:
+	During an update of player data, errors will be thrown about key duplicates.
+	Since all items are deleted first, this shouldn't happen.
+	This must mean that while one update is in-between deleting all items and re-adding all items,
+		another update comes along and re-adds all the items
 --]]
 
 -- Configuration
@@ -221,13 +227,22 @@ end
 --]]
 function PROVIDER:GetData(ply, callback)
 	local playerid = ply:SteamID64()
-	if IsInvalidSteamID64(playerid) then return end
+	if IsInvalidSteamID64(playerid) then callback(0, {}) return end
 	
 	-- Query the player's points first
 	local sql_string = "SELECT playerPoints FROM " .. mysql_pointstable .. " WHERE playerSteam64 = " .. playerid
 	query(sql_string, function(data)
-		-- If no rows are returned, stop here. PointShop will default to no points and items (a new player).
-		if data[1] == nil then return end
+		-- If no rows are returned, this is a new player
+		if data[1] == nil then
+			-- Add the player to the player points table
+			local sql_string = "INSERT INTO " .. mysql_pointstable .. "(playerSteam64, playerPoints) VALUES(" .. playerid .. ",0)"
+			query(sql_string, function(data)
+				-- Once the player has been successfully added to the table, run the callback with no points or items
+				callback(0, {})
+			end)
+			return 
+		end
+		
 		local points = data[1].playerPoints
 		
 		-- Now get the player's items
@@ -237,8 +252,8 @@ function PROVIDER:GetData(ply, callback)
 			-- Loop through returned rows and extract item data from each row
 			for key, row in pairs(data) do
 				-- Check if modifications is nil. If not, it's a JSON string.
-				local modifications = row.itemModifications
-				if modifications != nil then modifications = util.JSONToTable(modifications) end
+				local modifications = {}
+				if row.itemModifications != nil then modifications = util.JSONToTable(row.itemModifications) end
 				-- Add the item to the player's items table, along with modifications and if it's equipped
 				items[row.itemName] = {Modifiers = modifications, Equipped = row.itemEquipped}
 			end
@@ -270,7 +285,7 @@ function PROVIDER:SetData(ply, points, items)
 	-- Otherwise, a player could end up losing an item, but not gaining the points from selling it.
 	local sql_string = "UPDATE " .. mysql_pointstable .. " SET playerPoints = " .. points .. " WHERE playerSteam64 = " .. playerid
 	query(sql_string, function(data)
-		-- First remove all stored items for the player
+		-- Now remove all stored items for the player
 		local sql_string = "DELETE FROM " .. mysql_itemstable .. " WHERE playerSteam64 = " .. playerid
 		query(sql_string, function(data)
 			-- Check if the player has any items to insert
