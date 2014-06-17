@@ -103,12 +103,28 @@ Data variables:
 				}, 
 				Equipped = false 
 			}
+GetData
+	Used in PS:GetPlayerData (sv_pointshop)
+		Used in PS_LoadData (sv_player_extension)
+SetData
+	Used in PS:SetPlayerData (sv_pointshop)
+		Used in PS_Save (sv_player_extension)
+			Used in PS_SendPoints (sv_player_extension)
+				Used in PS_GivePoints (sv_player_extension)
+					Used to give players points
+				Used in PS_TakePoints (sv_player_extension)
+				Used in PS_SetPoints (sv_player_extension)
+				Used in PS_LoadData (sv_player_extension)
+					Used in PlayerInitialSpawn
+				
+			Used in PS_SendItems (sv_player_extension)
+				Used in PS_GiveItem (sv_player_extension)
 			
 Debug:
-	During an update of player data, errors will be thrown about key duplicates.
-	Since all items are deleted first, this shouldn't happen.
-	This must mean that while one update is in-between deleting all items and re-adding all items,
-		another update comes along and re-adds all the items
+	If two SetDatas are run very close to each other, they will conflict when inserting items.
+	This is because the first one deletes all the items.
+	The second one finds there are no items to delete and moves onto the insert
+	The first one finishes deleting and tries to insert and gets duplicated keys errors
 --]]
 
 -- Configuration
@@ -140,7 +156,6 @@ function db:onConnected()
 	print("[MySQL] INFO: PointShop- Connected to database!")
 	-- Iterate through queued queries in correct order
 	for key, value in ipairs(queue) do
-		print("[MySQL] DEBUG: Executing queue- " .. value[1])
 		query(value[1], value[2])
 	end
 	-- Empty queue
@@ -174,7 +189,6 @@ function query(sql_string, success_callback)
 	local q = db:query(sql_string)
 	if q == nil then
 		table.insert(queue, {sql_string, success_callback})
-		print("[MySQL] DEBUG: Queuing query (query object is nil): "..sql_string)
 		return
 	end
 	
@@ -191,7 +205,6 @@ function query(sql_string, success_callback)
 		if db:status() == mysqloo.DATABASE_NOT_CONNECTED then
 			-- Add the query to the queue and try to connect
 			table.insert(queue, {sql_string, success_callback})
-			print("[MySQL] DEBUG: Queuing query (not connected): "..sql_string)
 			db:connect()
 		end
 		print("[MySQL] ERROR: PointShop- Query produced error.")
@@ -205,6 +218,30 @@ end
 
 
 -- Pointshop functions
+-- Create our PointShop Tables if they don't already exist
+
+query(
+	"CREATE TABLE IF NOT EXISTS " .. mysql_pointstable .. " (" ..
+		"playerSteam64 BIGINT UNSIGNED NOT NULL, " .. 
+		"playerPoints INT UNSIGNED NOT NULL DEFAULT 0, " ..
+		"CONSTRAINT pk_playerpspoints_steam64 PRIMARY KEY(playerSteam64)" .. 
+	")ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci"
+, nil)
+
+query(
+	"CREATE TABLE IF NOT EXISTS " .. mysql_itemstable ..  " (" .. 
+		"playerSteam64 BIGINT UNSIGNED NOT NULL, " ..
+		"itemName VARCHAR(50) NOT NULL, " ..
+		"itemEquipped BOOLEAN NOT NULL DEFAULT FALSE, " ..
+		"itemModifications VARCHAR(512), " ..
+		"CONSTRAINT pk_playerpsitems UNIQUE(playerSteam64, itemName), " ..
+		"CONSTRAINT fk_playerpsitems_steam64 FOREIGN KEY(playerSteam64) " ..
+			"REFERENCES PlayerPSPoints(playerSteam64) " .. 
+			"ON UPDATE CASCADE ON DELETE CASCADE " .. 
+	")ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci"
+, nil)
+
+PROVIDER.Fallback = 'FuckOff'
 
 --[[
 	Checks if a given 64-bit Steam ID is invalid
@@ -283,7 +320,7 @@ function PROVIDER:SetData(ply, points, items)
 	
 	-- Update points first. We should only update items if the first query was successful.
 	-- Otherwise, a player could end up losing an item, but not gaining the points from selling it.
-	local sql_string = "UPDATE " .. mysql_pointstable .. " SET playerPoints = " .. points .. " WHERE playerSteam64 = " .. playerid
+	local sql_string = "UPDATE " .. mysql_pointstable .. " SET playerPoints = " .. points .. " WHERE playerSteam64 = " .. playerid .. ""
 	query(sql_string, function(data)
 		-- Now remove all stored items for the player
 		local sql_string = "DELETE FROM " .. mysql_itemstable .. " WHERE playerSteam64 = " .. playerid
@@ -317,4 +354,3 @@ function PROVIDER:SetData(ply, points, items)
 			query(sql_string, nil)
 		end)
 	end)
-end
