@@ -109,9 +109,9 @@ Data variables:
 -- MySQL connnection settings
 local mysql_host		= '127.0.0.1'
 local mysql_port		= 3306
-local mysql_user		= 'ttt-webstats'
-local mysql_pass		= 'ytqEuD8t958aRBY3'
-local mysql_database	= 'ttt-webstats'
+local mysql_user		= 'username'
+local mysql_pass		= 'password'
+local mysql_database	= 'database'
 -- Table settings
 local mysql_pointstable	= 'PlayerPSPoints'
 local mysql_itemstable	= 'PlayerPSItems'
