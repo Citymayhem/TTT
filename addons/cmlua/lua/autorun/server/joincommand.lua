@@ -22,10 +22,5 @@ function JoinCommand( pl, text, teamonly )
 		for k, v in pairs(player.GetAll()) do v:ChatPrint( "Player " .. pl:Nick() .. " has joined our Steam group via !join." )end
 		pl:SendLua("gui.OpenURL(\""..url.."\")")
 	end
-	if(text:lower() == "!member") then
-		local url = "http://citymayhem.net/showthread.php?tid=3663#pid32665"
-		for _, v in pairs(player.GetAll()) do v:ChatPrint("Player "..pl:Nick().." is trying to become a member. For perks like free skins, type !member")end
-		pl:SendLua("gui.OpenURL(\""..url.."\")")
-	end
 end
 hook.Add( "PlayerSay", "joincommand", JoinCommand )

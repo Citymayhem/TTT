@@ -15,8 +15,16 @@ http://www.badgercode.co.uk
 * Adds more weapon spawns to the CS:S maps
 * Allows traitors to attach the default C4 weapon to innocent players
 * Pointshop, mapvote and ULX modifications
+* Right-click menu for TTT: Adds ULX admin commands
+  * addons/cmlua/lua/autorun/client/tttmenu.lua
 * Pre-round player list printing and post-round damage log printing (in console)
+  * addons/cmlua/lua/autorun/client/printlog.lua
 * Legs (when you look down)
+  * addons/cmlua/lua/autorun/client/legmodels.lua
+* !Join command (opens up CityMayhem steam group)
+  * addons/cmlua/lua/autorun/server/joincommand.lua
+* Script for downloading custom content for maps which haven't packed them into the .bsp file 
+  * addons/cmlua/lua/autorun/server/mapResources.lua
 
 
 ##Installing

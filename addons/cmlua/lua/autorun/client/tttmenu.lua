@@ -1,63 +1,7 @@
-/*
-http://ttt.badking.net/guides/hooks
-TTTScoreboardColorForPlayer (ply)
-	return nil to keep default colour
-TTTScoreboardColumns (pnl)
-	pnl:AddColumn("Header", function(ply) return contents end)
-TTTScoreboardMenu (menu)
-	menu = DermaMenu()
-	menu:AddOption("Name",function() do stuff end):SetImage(path)
-*/
-local rankcolours = {}
-rankcolours["superadmin"] = Color( 196, 0, 170 )
-rankcolours["admin"] = Color( 224, 127, 1 )
-rankcolours["badmin"] = Color( 228, 188, 8 )
-rankcolours["moderator"] = Color( 0, 210, 255 )
-rankcolours["donator"] = Color( 222, 87, 87 )
-rankcolours["developer"] = Color( 157, 186, 92 )
-rankcolours["badmod"] = Color( 0, 210, 255 )
-rankcolours["owner"] = Color( 255, 0, 0 )
-rankcolours["member"] = Color( 255, 255, 255 )
+-- From the guide here- https://facepunch.com/showthread.php?t=1296365
+-- Thanks an.droid
 
-local ranknames = {}
-ranknames["member"] = "Member"
-ranknames["owner"] = "Owner"
-ranknames["developer"] = "Developer"
-ranknames["superadmin"] = "S. Admin"
-ranknames["donator"] = "Donator"
-ranknames["badmin"] = "Admin"
-ranknames["admin"] = "Admin"
-ranknames["moderator"] = "Moderator"
-ranknames["badmod"] = "Moderator"
-
-local panelfont = "HudHintTextLarge"
-local panelpadding = 25
-local panelitemmargin = 10
-
-local durationtypes = {}
-durationtypes['h'] = "Hours"
-durationtypes['d'] = "Days"
-durationtypes['w'] = "Weeks"
-durationtypes['y'] = "Years"
-
-hook.Add("TTTScoreboardColorForPlayer","cmscoreboardcolour",function(ply)
-	if(rankcolours[ply:GetUserGroup()] == nil)then
-		return nil
-	end
-	return rankcolours[ply:GetUserGroup()]
-end)
-
-// Adds a rank column to the TTT menu
-hook.Add("TTTScoreboardColumns","cmscoreboardrank",function(pnl)
-	pnl:AddColumn("Rank",function(ply)
-		--self:SetTextColor(rankcolours[ply:GetUserGroup()] or Color(255,255,255))
-		if(ranknames[ply:GetUserGroup()] == nil)then return "User" end
-		return ranknames[ply:GetUserGroup()]
-	end, 500)
-end)
-
-
-// Adds the right-click context menu to the TTT menu
+-- Adds the right-click context menu to the TTT menu
 hook.Add("TTTScoreboardMenu","cmscoreboardcontextmenu",function(menu)
 	if not menu.Player:IsValid() then return end
 	
@@ -72,8 +16,8 @@ end)
 
 
 function AddGeneralSection(menu)
-	local ply = LocalPlayer() -- Player who right-clicked
-	local target = menu.Player -- Player right clicked on
+	local ply = LocalPlayer()
+	local target = menu.Player
 	menu:AddOption("Copy Name", function() SetClipboardText(target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/user_edit.png")
 	menu:AddOption("Copy SteamID", function() SetClipboardText(target:SteamID()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/tag_blue.png")
 	menu:AddOption("Open Profile", function() target:ShowProfile() surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/world.png")
@@ -392,122 +336,3 @@ function ValidateLength(length)
 	
 	return length, lengthmsg
 end
-
-
-/*
-
-
-
-
-
-// Old code for colours & rank column
-//nearly all  made by Rejax, give creds to him <3
-local COKE = {}
-COKE.Colors = {}
-COKE.Ranks = {}
-
-// <config>
-
-COKE.Colors["superadmin"] = Color( 196, 0, 170 )
-COKE.Colors["admin"] = Color( 224, 127, 1 )
-COKE.Colors["badmin"] = Color( 228, 188, 8 )
-COKE.Colors["moderator"] = Color( 0, 210, 255 )
-COKE.Colors["donator"] = Color( 222, 87, 87 )
-COKE.Colors["developer"] = Color( 157, 186, 92 )
-COKE.Colors["badmod"] = Color( 0, 210, 255 )
-COKE.Colors["owner"] = Color( 255, 0, 0 )
-COKE.Colors["member"] = Color( 255, 255, 255 )
-
-
-COKE.Ranks["member"] = "Member"
-COKE.Ranks["owner"] = "Owner"
-COKE.Ranks["developer"] = "Developer"
-COKE.Ranks["superadmin"] = "S. Admin"
-COKE.Ranks["donator"] = "Donator"
-COKE.Ranks["badmin"] = "Admin"
-COKE.Ranks["admin"] = "Admin"
-COKE.Ranks["moderator"] = "Moderator"
-COKE.Ranks["badmod"] = "Moderator"
-
-COKE.UseNameColors = true
-COKE.NamePositioning = 5 -- EITHER FIVE, SIX OR SEVEN, DO NOT CHANGE OTHERWISE
-COKE.CreateRankLabel = { enabled = true, text = "Rank" }
-
-// </config>
-
-local function MakeLabel( sb, text )
-	for i = 1, COKE.NamePositioning do
-		if ValidPanel(sb.cols[i]) then continue end
-		sb.cols[i] = vgui.Create( "DLabel", sb )
-		sb.cols[i]:SetText("")
-	end
-	sb.cols[COKE.NamePositioning] = vgui.Create( "DLabel", sb )
-	sb.cols[COKE.NamePositioning]:SetText( text )
-end
-
-local function MakeRankText( sb, ply )
-
-	local userGroup = ply:GetNWString( "usergroup" )
-	local rankName = COKE.Ranks[userGroup]
-	local rankColor = COKE.Colors[userGroup] or color_white
-	local NamePositioning = COKE.NamePositioning
-	
-	for i = 1, NamePositioning-1 do
-		if ValidPanel(sb.cols[i]) then continue end
-		sb.cols[i] = vgui.Create( "DLabel", sb )
-		sb.cols[i]:SetText("")
-	end
-	sb.cols[NamePositioning] = vgui.Create( "DLabel", sb )
-	sb.cols[NamePositioning]:SetText( rankName )
-	sb.cols[NamePositioning]:SetTextColor( rankColor )
-	sb.cols[NamePositioning]:SetName( "COKEfor_"..ply:EntIndex() )
-
-	local applySSettings = sb.ApplySchemeSettings
-	sb.ApplySchemeSettings = function( self )
-		applySSettings(self)
-		self.cols[NamePositioning]:SetText( rankName )
-		self.cols[NamePositioning]:SetTextColor( rankColor ) -- overwrite the given color
-		self.cols[NamePositioning]:SetFont("treb_small")
-	end
-	
-	local TTTcanfuckit = sb.LayoutColumns
-	sb.LayoutColumns = function( self )
-		TTTcanfuckit(self)
-		local col = self.cols[NamePositioning]
-	end
-end
-
-local function DoRankLabel( sb )
-	for _, ply_group in ipairs( sb.ply_groups ) do
-		for ply, row in pairs( ply_group.rows ) do
-			if COKE.Ranks[ply:GetNWString("usergroup")] then
-				MakeRankText( row, ply )
-			end
-		end
-	end
-end
-
-local function COKE_Do()
---	if COKE.Created then return end
-
-	GAMEMODE:ScoreboardCreate()
-	
-	local sb_main = GAMEMODE:GetScoreboardPanel()
-	
-	if COKE.CreateRankLabel.enabled then MakeLabel( sb_main, COKE.CreateRankLabel.text ) end
-	DoRankLabel( sb_main )
-	
---	COKE.Created = true
-end
-hook.Add( "ScoreboardShow", "EasyScoreboard_Show", COKE_Do )
-
-local function AddNameColors( ply )
-	local userGroup = ply:GetNWString( "usergroup" )
-	if COKE.Colors[userGroup] and COKE.UseNameColors then
-		return COKE.Colors[userGroup]
-	else return color_white end
-end
-hook.Add( "TTTScoreboardColorForPlayer", "COKEColour", AddNameColors )
-
-
-*/
