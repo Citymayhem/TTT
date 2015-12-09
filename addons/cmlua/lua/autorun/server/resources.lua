@@ -26,15 +26,3 @@ resource.AddFile("materials/models/santa/ball.vmt")
 resource.AddFile("models/santa/santa.mdl")
 resource.AddSingleFile("models/santa/santa.vvd")
 resource.AddSingleFile("models/santa/santa.sw.vtx")
-
-//==
-//Chips
-//=
-//Material
-resource.AddFile("materials/models/foodnhouseholditems/mcdmisc.vmt")
-//Model
-resource.AddFile("models/foodnhouseholditems/mcdfrenchfries.mdl")
-resource.AddSingleFile("models/foodnhouseholditems/mcdfrenchfries.vvd")
-resource.AddSingleFile("models/foodnhouseholditems/mcdfrenchfries.sw.vtx")
-
-
