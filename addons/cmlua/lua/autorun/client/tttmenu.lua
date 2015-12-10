@@ -1,160 +1,140 @@
 -- From the guide here- https://facepunch.com/showthread.php?t=1296365
 -- Thanks an.droid
+-- LocalPlayer = Player who clicked
+-- menu.Player = Player clicked on
+
+local panelfont = "HudHintTextLarge"
+local panelpadding = 25
+local panelitemmargin = 10
+
+local durationtypes = {}
+durationtypes['h'] = "Hours"
+durationtypes['d'] = "Days"
+durationtypes['w'] = "Weeks"
+durationtypes['y'] = "Years"
+
+
+--[[
+===================================================================================================
+Utility Functions
+===================================================================================================
+--]]
+function PlayClickSound()
+	surface.PlaySound("buttons/button9.wav")
+end
+
+function AddMenuOption(menu, text, iconImagePath, onClick)
+	local target = menu.Player
+	
+	local onClickCallback = function()
+		if IsValid(target) then
+			onClick(target)
+			PlayClickSound()
+		end
+	end
+	
+	menu:AddOption(text, onClickCallback):SetImage(iconImagePath)
+end
+
+function AddRestrictedMenuOption(menu, text, iconImagePath, requiredPermission, onClick)
+	local ply = LocalPlayer() 
+	
+	if ULib and ULib.ucl.query(ply, requiredPermission)then
+		AddMenuOption(menu, text, iconImagePath, onClick)
+	end
+end
+
+-- When given a string as a time length, it will extract valid ban lengths
+function ValidateBanLength(length)
+	length = string.gsub(length,"%s+","")
+	if(length == "")then return nil end
+	
+	-- Generate a message to show on the menu based on the length
+	local lengthmsg = nil
+	if(tonumber(length))then
+		if(tonumber(length) == 0)then lengthmsg = "permanent"
+		else lengthmsg = length .. " minutes" end
+	else
+		local cleanlength = ""
+		for duration,durationtype in string.gmatch(length,'([0-9]+)(%a)') do
+			if(durationtypes[durationtype] == nil)then return nil end
+			if(lengthmsg != nil)then lengthmsg = lengthmsg .. ", "
+			else lengthmsg = "" end
+			cleanlength = cleanlength .. duration .. durationtype
+			lengthmsg = lengthmsg .. duration .. " " .. durationtypes[durationtype]
+		end
+		if(lengthmsg == nil)then return nil end
+		length = cleanlength
+	end
+	
+	return length, lengthmsg
+end
+--[[
+===================================================================================================
+--]]
+
 
 -- Adds the right-click context menu to the TTT menu
-hook.Add("TTTScoreboardMenu","cmscoreboardcontextmenu",function(menu)
-	if not menu.Player:IsValid() then return end
-	
-	surface.PlaySound("buttons/button9.wav")
-	
-	AddGeneralSection(menu)
-	AddMiscAdminSection(menu)
-	AddMessageAdminSection(menu)
-	AddKickBanAdminSection(menu)
-end)
-
-
-
-function AddGeneralSection(menu)
+hook.Add("TTTScoreboardMenu","cmscoreboardcontextmenu", function(menu)
 	local ply = LocalPlayer()
 	local target = menu.Player
-	menu:AddOption("Copy Name", function() SetClipboardText(target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/user_edit.png")
-	menu:AddOption("Copy SteamID", function() SetClipboardText(target:SteamID()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/tag_blue.png")
-	menu:AddOption("Open Profile", function() target:ShowProfile() surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/world.png")
-	printspacer = true
+	
+	if not IsValid(target) then return end
+	
+	PlayClickSound()
+	
+	AddGeneralSection(menu)
+	
+	-- This check is here purely so we can add spacing between the admin and non-admin options
+	-- There's a better way to do this, but I cba
+	local minimumAdminGroup = "mod"
+	if(ply:CheckGroup(minimumAdminGroup)) then
+		menu:AddSpacer()
+		AddAdminSections(menu)
+	end
+end)
+
+function AddGeneralSection(menu)	
+	AddMenuOption(menu, "Copy Name", "icon16/user_edit.png", function(target) SetClipboardText( target:Nick() ) end )
+	AddMenuOption(menu, "Copy SteamID", "icon16/tag_blue.png", function(target) SetClipboardText( target:SteamID() ) end )
+	AddMenuOption(menu, "Open Profile", "icon16/world.png", function(target) target:ShowProfile() end )
 end
 
+function AddAdminSections(menu)
 
-
-function AddMiscAdminSection(menu)
-	local ply = LocalPlayer() -- Player who right-clicked
-	local target = menu.Player -- Player right clicked on
-	-- True as soon as we print an option. Used to print out a spacer before the first option for this section
-	local addedoption = false
+	AddRestrictedMenuOption(menu, "Spectate", "icon16/zoom.png", "ulx spectate", function(target) RunConsoleCommand("ulx","spectate", target:Nick() )  end )
+	AddRestrictedMenuOption(menu, "Force Spectator", "icon16/status_offline.png", "ulx fspec", function(target) RunConsoleCommand("ulx","spec", target:Nick() )  end )
 	
-	--Spectating
-	if ULib and ULib.ucl.query(ply,"ulx spectate")then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Spectate", function () RunConsoleCommand("ulx","spectate",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/zoom.png")
-	end
-	--Goto
-	if ULib and ULib.ucl.query(ply,"ulx goto") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Go To", function () RunConsoleCommand("ulx","goto",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/arrow_up.png")
-	end
-	--Bring
-	if ULib and ULib.ucl.query(ply,"ulx teleport") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Bring (Where you're aiming)", function () RunConsoleCommand("ulx","teleport",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/arrow_down.png")
-	end
-	--Slap
-	if ULib and ULib.ucl.query(ply,"ulx slap") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Slap", function () RunConsoleCommand("ulx","slap",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/arrow_out.png")
-	end
-	--Slay
-	if ULib and ULib.ucl.query(ply,"ulx slay") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Slay", function () RunConsoleCommand("ulx","slay",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/cross.png")
-	end
-	--SlayNR
-	if ULib and ULib.ucl.query(ply,"ulx slaynr") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Slay Next Round", function () RunConsoleCommand("ulx","slaynr",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/clock_red.png")
-	end
-	--Respawn
-	if ULib and ULib.ucl.query(ply,"ulx respawn") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Respawn", function () RunConsoleCommand("ulx","respawn",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/heart.png")
-	end
-end
-
-
-
-function AddMessageAdminSection(menu)
-	local ply = LocalPlayer() -- Player who right-clicked
-	local target = menu.Player -- Player right clicked on
-	local addedoption = false -- True as soon as we print an option
+	menu:AddSpacer()
 	
-	--Message
-	if ULib and ULib.ucl.query(ply,"ulx psay") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Message", function ()
-			-- Private message panel
-			local curx = panelpadding
-			local cury = panelpadding + panelitemmargin
-			
-			local pmsgpanel = vgui.Create("DFrame")
-				pmsgpanel:SetTitle("Private Message " .. target:Nick())
-				pmsgpanel:ShowCloseButton(true)
-				pmsgpanel:SetVisible(true)
-				pmsgpanel:MakePopup()
-				pmsgpanel:SetDraggable(true)
-				
-			local pmsglabel = vgui.Create("DLabel", pmsgpanel)
-				pmsglabel:SetPos(curx,cury)
-				pmsglabel:SetText("Enter a private message to send to " .. target:Nick())
-				pmsglabel:SizeToContents()
-			cury = cury + pmsglabel:GetTall() + panelitemmargin
-			
-			local pmsgtext = vgui.Create("DTextEntry", pmsgpanel)
-				pmsgtext:SetPos(curx,cury)
-				pmsgtext:SetTall(20)
-				pmsgtext:SetWide(450)
-				pmsgtext:SetEnterAllowed(true)
-			
-			pmsgpanel:SetSize(math.max(pmsglabel:GetSize(), pmsgtext:GetSize()) + panelpadding * 2, cury + pmsgtext:GetTall() + panelitemmargin)
-			pmsgpanel:SetPos(ScrW() * 0.5 - (pmsgpanel:GetSize() / 2), ScrH() * 0.5 - (pmsgpanel:GetTall() / 2))
-			pmsgtext:SetPos(pmsgpanel:GetSize() / 2 - pmsgtext:GetSize() / 2, cury) -- center text box
-			
-			pmsgtext:RequestFocus()
-			pmsgtext.OnEnter = function()
-				local message = pmsgtext:GetValue()
-				if(message == "")then return end
-				RunConsoleCommand("ulx", "psay", target:Nick(), message)
-				surface.PlaySound("buttons/button9.wav")
-				pmsgpanel:SetVisible(false)
-			end
-		end):SetImage("icon16/comments.png")
-	end
-	--Mute
-	if ULib and ULib.ucl.query(ply,"ulx mute") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Mute", function() RunConsoleCommand("ulx","mute",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/comment_delete.png")
-	end
-	--Unmute
-	if ULib and ULib.ucl.query(ply,"ulx unmute") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Unmute", function() RunConsoleCommand("ulx","unmute",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/comment_add.png")
-	end
-	--Gag
-	if ULib and ULib.ucl.query(ply,"ulx gag") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Gag", function() RunConsoleCommand("ulx","gag",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/sound_mute.png")
-	end
-	--Ungag
-	if ULib and ULib.ucl.query(ply,"ulx ungag") then
-		if(not addedoption)then menu:AddSpacer() addedoption = true end
-		menu:AddOption("Ungag", function() RunConsoleCommand("ulx","ungag",target:Nick()) surface.PlaySound("buttons/button9.wav") end):SetImage("icon16/sound_low.png")
-	end
-end
-
-
-
-function AddKickBanAdminSection(menu)
-	local ply = LocalPlayer() -- Player who right-clicked
-	local target = menu.Player -- Player right clicked on
-	local addedoption = false -- True as soon as we print an option
+	AddRestrictedMenuOption(menu, "Teleport To", "icon16/arrow_up.png", "ulx goto", function(target) RunConsoleCommand("ulx","goto", target:Nick() )  end )
+	AddRestrictedMenuOption(menu, "Bring (To where you're aiming)", "icon16/arrow_up.png", "ulx teleport", function(target) RunConsoleCommand("ulx","teleport", target:Nick() )  end )
 	
-	--Kick
+	menu:AddSpacer()
+	
+	AddRestrictedMenuOption(menu, "Slay", "icon16/user_red.png", "ulx slay", function(target) RunConsoleCommand("ulx","slay", target:Nick() )  end )
+	AddRestrictedMenuOption(menu, "Slay Next Round(s)", "icon16/clock_red.png", "ulx slaynr", function(target) RunConsoleCommand("ulx","slaynr", target:Nick() )  end )
+	
+	menu:AddSpacer()
+	
+	AddRestrictedMenuOption(menu, "Add Chat Message", "icon16/text_padding_bottom.png", "ulx tsay", function(target) RunConsoleCommand("ulx","tsay", "TODO" )  end )
+	AddRestrictedMenuOption(menu, "Private Message", "icon16/user_comment.png", "ulx psay", function(target) ShowPrivateMessagePanel(target)  end )
+	AddRestrictedMenuOption(menu, "Gag", "icon16/sound_mute.png", "ulx gag", function(target) RunConsoleCommand("ulx","gag", target:Nick() )  end )
+	AddRestrictedMenuOption(menu, "Ungag", "icon16/sound_low.png", "ulx ungag", function(target) RunConsoleCommand("ulx","ungag", target:Nick() )  end )
+	AddRestrictedMenuOption(menu, "Mute", "icon16/comment_delete.png", "ulx mute", function(target) RunConsoleCommand("ulx","mute", target:Nick() )  end )
+	AddRestrictedMenuOption(menu, "Unmute", "icon16/comment_add.png", "ulx unmute", function(target) RunConsoleCommand("ulx","unmute", target:Nick() )  end )
+	
+	menu:AddSpacer()
+	
+	AddRestrictedMenuOption(menu, "Kick", "icon16/door_in.png", "ulx kick", function(target) RunConsoleCommand("ulx","kick", "TODO" )  end )
 	if ULib and ULib.ucl.query(ply,"ulx kick") then
 		if(not addedoption)then menu:AddSpacer() addedoption = true end
 		local kickmenu, kickmenuimg = menu:AddSubMenu("Kick")
 			kickmenuimg:SetImage("icon16/error.png")
-			kickmenu:AddOption("RDM Warning", function() RunConsoleCommand("ulx","kick",target:Nick(),"RDM Warning") surface.PlaySound("buttons/button9.wav") end)
-			kickmenu:AddOption("Spamming", function() RunConsoleCommand("ulx","kick",target:Nick(),"Spamming") surface.PlaySound("buttons/button9.wav") end)
-			kickmenu:AddOption("Racism (Minor)", function() RunConsoleCommand("ulx","kick",target:Nick(),"Racism (Minor)") surface.PlaySound("buttons/button9.wav") end)
-			kickmenu:AddOption("Throwing Grenades Randomly", function() RunConsoleCommand("ulx","kick",target:Nick(),"Throwing Grenades Randomly") surface.PlaySound("buttons/button9.wav") end)
+			AddMenuOption(kickmenu "RDM Warning", "", function() RunConsoleCommand("ulx","kick",target:Nick(),"RDM Warning")  end)
+			AddMenuOption(kickmenu "Spamming", "", function() RunConsoleCommand("ulx","kick",target:Nick(),"Spamming")  end)
+			AddMenuOption(kickmenu "Racism (Minor)", "", function() RunConsoleCommand("ulx","kick",target:Nick(),"Racism (Minor)")  end)
+			AddMenuOption(kickmenu "Throwing Grenades Randomly", "", function() RunConsoleCommand("ulx","kick",target:Nick(),"Throwing Grenades Randomly")  end)
 			kickmenu:AddOption("Other (specify)", function ()
 				--Our kick reason panel
 				local curx = panelpadding
@@ -188,31 +168,31 @@ function AddKickBanAdminSection(menu)
 				krtext:RequestFocus()
 				krtext.OnEnter = function()-- When the user presses enter or submits the kick reason
 					RunConsoleCommand("ulx","kick",target:Nick(),krtext:GetValue())--We're allowing no reason to be specified
-					surface.PlaySound("buttons/button9.wav")
+					PlayClickSound()
 					krpanel:SetVisible(false)
 				end
 			end):SetImage("icon16/textfield.png")
 		-- end of kick sub-menu
 	end
 	
-	--Ban
+	AddRestrictedMenuOption(menu, "Ban", "icon16/cross.png", "ulx ban", function(target) RunConsoleCommand("ulx","ban", "TODO" )  end )
 	if ULib and ULib.ucl.query(ply,"ulx ban") then
 		if(not addedoption)then menu:AddSpacer() addedoption = true end
 		local banmenu, banmenuimg = menu:AddSubMenu("Ban")
 			banmenuimg:SetImage("icon16/stop.png")
 			local rdmmenu, rdmmenuimg = banmenu:AddSubMenu("RDM")
 				rdmmenuimg:SetImage("icon16/bomb.png")
-				rdmmenu:AddOption("x2 (1 day)", function() RunConsoleCommand("ulx","ban",target:Nick(),"1d","RDM x 2") surface.PlaySound("buttons/button9.wav") end)
-				rdmmenu:AddOption("x3 (2 days)", function() RunConsoleCommand("ulx","ban",target:Nick(),"2d","RDM x 3") surface.PlaySound("buttons/button9.wav") end)
-				rdmmenu:AddOption("x4 (3 days)", function() RunConsoleCommand("ulx","ban",target:Nick(),"3d","RDM x 4") surface.PlaySound("buttons/button9.wav") end)
-				rdmmenu:AddOption("x5 (4 days)", function() RunConsoleCommand("ulx","ban",target:Nick(),"4d","RDM x 5") surface.PlaySound("buttons/button9.wav") end)
-				rdmmenu:AddOption("x6 (5 days)", function() RunConsoleCommand("ulx","ban",target:Nick(),"5d","RDM x 6") surface.PlaySound("buttons/button9.wav") end)
-				rdmmenu:AddOption("7+ (perm)", function() RunConsoleCommand("ulx","ban",target:Nick(),0,"Mass RDM") surface.PlaySound("buttons/button9.wav") end)
-			banmenu:AddOption("Excessive Spam", function() RunConsoleCommand("ulx","ban",target:Nick(),"1d","Excessive Spam") surface.PlaySound("buttons/button9.wav") end)
-			banmenu:AddOption("Inappropriate Spray", function() RunConsoleCommand("ulx","ban",target:Nick(),"1d","Inappropriate Spray") surface.PlaySound("buttons/button9.wav") end)
-			banmenu:AddOption("Major Offensive Behaviour", function() RunConsoleCommand("ulx","ban",target:Nick(),0,"Major Offensive Behaviour") surface.PlaySound("buttons/button9.wav") end)
-			banmenu:AddOption("Random Nades", function() RunConsoleCommand("ulx","ban",target:Nick(),"2d","Throwing Grenades Randomly") surface.PlaySound("buttons/button9.wav") end)
-			banmenu:AddOption("Ghosting", function() RunConsoleCommand("ulx","ban",target:Nick(),0,"Ghosting") surface.PlaySound("buttons/button9.wav") end)
+				AddMenuOption(rdmmenu "x2 (1 day)", "", function() RunConsoleCommand("ulx","ban",target:Nick(),"1d","RDM x 2")  end)
+				AddMenuOption(rdmmenu "x3 (2 days)", "", function() RunConsoleCommand("ulx","ban",target:Nick(),"2d","RDM x 3")  end)
+				AddMenuOption(rdmmenu "x4 (3 days)", "", function() RunConsoleCommand("ulx","ban",target:Nick(),"3d","RDM x 4")  end)
+				AddMenuOption(rdmmenu "x5 (4 days)", "", function() RunConsoleCommand("ulx","ban",target:Nick(),"4d","RDM x 5")  end)
+				AddMenuOption(rdmmenu "x6 (5 days)", "", function() RunConsoleCommand("ulx","ban",target:Nick(),"5d","RDM x 6")  end)
+				AddMenuOption(rdmmenu "7+ (perm)", "", function() RunConsoleCommand("ulx","ban",target:Nick(),0,"Mass RDM")  end)
+			AddMenuOption(banmenu "Excessive Spam", "", function() RunConsoleCommand("ulx","ban",target:Nick(),"1d","Excessive Spam")  end)
+			AddMenuOption(banmenu "Inappropriate Spray", "", function() RunConsoleCommand("ulx","ban",target:Nick(),"1d","Inappropriate Spray")  end)
+			AddMenuOption(banmenu "Major Offensive Behaviour", "", function() RunConsoleCommand("ulx","ban",target:Nick(),0,"Major Offensive Behaviour")  end)
+			AddMenuOption(banmenu "Random Nades", "", function() RunConsoleCommand("ulx","ban",target:Nick(),"2d","Throwing Grenades Randomly")  end)
+			AddMenuOption(banmenu "Ghosting", "", function() RunConsoleCommand("ulx","ban",target:Nick(),0,"Ghosting")  end)
 			banmenu:AddOption("Other (specify)", function ()
 				--Ban length panel
 				local curx = panelpadding
@@ -255,9 +235,9 @@ function AddKickBanAdminSection(menu)
 				bltext:RequestFocus() -- Set it as the focus
 				bltext.OnEnter = function()--On submitting ban length
 					-- Tidy up length string
-					local length, lengthmsg = ValidateLength(bltext:GetValue())
+					local length, lengthmsg = ValidateBanLength(bltext:GetValue())
 					if(length == nil)then surface.PlaySound("buttons/combine_button_locked.wav") bltext:RequestFocus() return end
-					surface.PlaySound("buttons/button9.wav")
+					PlayClickSound()
 					blpanel:SetVisible(false)
 					
 					-- Generate the menu
@@ -303,7 +283,7 @@ function AddKickBanAdminSection(menu)
 						
 						brpanel:SetVisible(false)							
 						RunConsoleCommand("ulx","ban",target:Nick(),length,reason)
-						surface.PlaySound("buttons/button9.wav")
+						PlayClickSound()
 					end
 				end
 			end):SetImage("icon16/textfield.png")
@@ -311,28 +291,78 @@ function AddKickBanAdminSection(menu)
 	end
 end
 
-// When given a string as a time length, it will extract valid ban lengths
-function ValidateLength(length)
-	length = string.gsub(length,"%s+","")
-	if(length == "")then return nil end
+function ShowPrivateMessagePanel (target)
+	-- Private message panel
+	local curx = panelpadding
+	local cury = panelpadding + panelitemmargin
 	
-	-- Generate a message to show on the menu based on the length
-	local lengthmsg = nil
-	if(tonumber(length))then
-		if(tonumber(length) == 0)then lengthmsg = "permanent"
-		else lengthmsg = length .. " minutes" end
-	else
-		local cleanlength = ""
-		for duration,durationtype in string.gmatch(length,'([0-9]+)(%a)') do
-			if(durationtypes[durationtype] == nil)then return nil end
-			if(lengthmsg != nil)then lengthmsg = lengthmsg .. ", "
-			else lengthmsg = "" end
-			cleanlength = cleanlength .. duration .. durationtype
-			lengthmsg = lengthmsg .. duration .. " " .. durationtypes[durationtype]
-		end
-		if(lengthmsg == nil)then return nil end
-		length = cleanlength
+	local pmsgpanel = vgui.Create("DFrame")
+		pmsgpanel:SetTitle("Private Message " .. target:Nick())
+		pmsgpanel:ShowCloseButton(true)
+		pmsgpanel:SetVisible(true)
+		pmsgpanel:MakePopup()
+		pmsgpanel:SetDraggable(true)
+		
+	local pmsglabel = vgui.Create("DLabel", pmsgpanel)
+		pmsglabel:SetPos(curx,cury)
+		pmsglabel:SetText("Enter a private message to send to " .. target:Nick())
+		pmsglabel:SizeToContents()
+	cury = cury + pmsglabel:GetTall() + panelitemmargin
+	
+	local pmsgtext = vgui.Create("DTextEntry", pmsgpanel)
+		pmsgtext:SetPos(curx,cury)
+		pmsgtext:SetTall(20)
+		pmsgtext:SetWide(450)
+		pmsgtext:SetEnterAllowed(true)
+	
+	pmsgpanel:SetSize(math.max(pmsglabel:GetSize(), pmsgtext:GetSize()) + panelpadding * 2, cury + pmsgtext:GetTall() + panelitemmargin)
+	pmsgpanel:SetPos(ScrW() * 0.5 - (pmsgpanel:GetSize() / 2), ScrH() * 0.5 - (pmsgpanel:GetTall() / 2))
+	pmsgtext:SetPos(pmsgpanel:GetSize() / 2 - pmsgtext:GetSize() / 2, cury) -- center text box
+	
+	pmsgtext:RequestFocus()
+	pmsgtext.OnEnter = function()
+		local message = pmsgtext:GetValue()
+		if(message == "")then return end
+		RunConsoleCommand("ulx", "psay", target:Nick(), message)
+		PlayClickSound()
+		pmsgpanel:SetVisible(false)
 	end
+end
+		
+function ShowKickReasonPanel(target)
+	--Our kick reason panel
+	local curx = panelpadding
+	local cury = panelpadding + panelitemmargin
 	
-	return length, lengthmsg
+	local krpanel = vgui.Create("DFrame")
+		krpanel:SetTitle("Kick Reason")
+		krpanel:ShowCloseButton(true)
+		krpanel:SetVisible(true)
+		krpanel:MakePopup()
+		krpanel:SetDraggable(true)
+	
+	local krlabel = vgui.Create("DLabel", krpanel)-- Kick reason label
+		krlabel:SetPos(curx,cury)
+		krlabel:SetText("Enter a kick reason below (optional) and then press enter.")
+		krlabel:SetFont(panelfont)
+		krlabel:SizeToContents()
+	cury = cury + krlabel:GetTall() + panelitemmargin
+	
+	local krtext = vgui.Create("DTextEntry", krpanel)--Our kick reason text box
+		krtext:SetPos(curx,cury)
+		krtext:SetTall(20)
+		krtext:SetWide(450)
+		krtext:SetEnterAllowed(true)
+	
+	krpanel:SetSize(math.max(krlabel:GetSize(), krtext:GetSize()) + panelpadding * 2, cury + krtext:GetTall() + panelitemmargin)
+	krpanel:SetPos(ScrW() * 0.5 - (krpanel:GetSize() / 2), ScrH() * 0.5 - (krpanel:GetTall() / 2))
+	krtext:SetPos(krpanel:GetSize() / 2 - krtext:GetSize() / 2, cury) -- center text box
+	
+	-- Text box processing
+	krtext:RequestFocus()
+	krtext.OnEnter = function()-- When the user presses enter or submits the kick reason
+		RunConsoleCommand("ulx","kick",target:Nick(),krtext:GetValue())--We're allowing no reason to be specified
+		PlayClickSound()
+		krpanel:SetVisible(false)
+	end
 end
