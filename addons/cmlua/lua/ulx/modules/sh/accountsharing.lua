@@ -1,6 +1,6 @@
 -- Original post http://facepunch.com/showthread.php?t=1341204&p=43469693&viewfull=1#post43469693
 -- Credit to McSimp
-local APIKey = "5AECCEA60D0D4431D8AEEA357F08425E" -- See http://steamcommunity.com/dev/apikey
+local APIKey = "APIKEYGOESHERE" -- See http://steamcommunity.com/dev/apikey
 
 local function HandleSharedPlayer(ply, lenderSteamID)
     print(string.format("FamilySharing: %s | %s has been lent Garry's Mod by %s", 

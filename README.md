@@ -13,6 +13,7 @@ http://www.badgercode.co.uk
 
 ##Includes
 * Adds more weapon spawns to the CS:S maps
+	* addons/cmlua/lua/maps/
 * Allows traitors to attach the default C4 weapon to innocent players
 * Pointshop modifications
 * Right-click menu for TTT: Adds ULX admin commands
@@ -25,15 +26,19 @@ http://www.badgercode.co.uk
   * addons/cmlua/lua/autorun/server/joincommand.lua
 * Script for downloading custom content for maps which haven't packed them into the .bsp file 
   * addons/cmlua/lua/autorun/server/mapResources.lua
+* Bans players who get around bans using family sharing
+  * addons/cmlua/lua/ulx/modules/sh/accountsharing.lua
 
 
 ##Installing
-* Download and install the following addons:
-  * Pointshop- https://github.com/adamdburton/pointshop
-  * Mapvote- https://github.com/tyrantelf/gmod-mapvote
-  * ULX and ULib- https://github.com/Nayruden/Ulysses/
-  * Spraymon- http://steamcommunity.com/sharedfiles/filedetails/?id=105463332
-* Install the contents of this repository into your garrysmod directory.
-  * Some files and directories will need to be overwritten.
-* If you want to use the custom weapons and have them spawn on the CS:S maps:  
-  * Delete all the map spawns in /gamemodes/terrortown/content/maps/
+1. Download and install the following addons:
+  1. Pointshop- https://github.com/adamdburton/pointshop
+  2. Mapvote- https://github.com/willox/gmod-mapvote
+  3. ULX and ULib- https://github.com/Nayruden/Ulysses/
+  4. Spraymon- http://steamcommunity.com/sharedfiles/filedetails/?id=105463332
+2. Install the contents of this repository into your garrysmod directory.
+  1. Some files and directories will need to be overwritten.
+3. Delete all the map spawns in /gamemodes/terrortown/content/maps/
+4. Add your Steam API key to addons/cmlua/lua/ulx/modules/sh/accountsharing.lua
+	1. Replace APIKEYGOESHERE with it
+	2. See http://steamcommunity.com/dev/apikey
