@@ -33,7 +33,7 @@ http://www.badgercode.co.uk
 ##Installing
 1. Download and install the following addons:
   1. Pointshop- https://github.com/adamdburton/pointshop
-  2. Mapvote- https://github.com/willox/gmod-mapvote
+  2. Mapvote- https://github.com/tyrantelf/gmod-mapvote
   3. ULX and ULib- https://github.com/Nayruden/Ulysses/
   4. Spraymon- http://steamcommunity.com/sharedfiles/filedetails/?id=105463332
 2. Install the contents of this repository into your garrysmod directory.
