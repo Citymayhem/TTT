@@ -1,4 +1,5 @@
 /lua/sh_config.lua
+===
 Line 26: 
 	PS.Config.PointsName = 'Cookies' -- What are the points called?
 Line 27: 
@@ -10,16 +11,22 @@ Under PS.Config.CalculateBuyPrice = function(ply, item)
 		else return math.Round(item.Price * 0.9) end
 	end
 	return item.Price
-	
+
+
+
+
 Delete everything in server's pointshop/lua/items
 Replace with items in cmttt repository's /addons/pointshop/lua/items
 
-lua/sv_player_extension.lua
-        Under the functions Player:PS_BuyItem and Player:PS_HolsterItem,
-        I have commented out the following line:
-                if not self:PS_CanPerformAction() then return false end
 
-        and I have changed the notification under Player:PS_CanPerformAction() from
-                self:PS_Notify('You\'re not allowed to do that at the moment!')
-        to
-                self:PS_Notify('You\'re not allowed to equip items when dead or spectating.')
+
+lua/sv_player_extension.lua
+===
+Under the functions Player:PS_BuyItem and Player:PS_HolsterItem,
+I have commented out the following line:
+	if not self:PS_CanPerformAction() then return false end
+
+and I have changed the notification under Player:PS_CanPerformAction() from
+	self:PS_Notify('You\'re not allowed to do that at the moment!')
+to
+	self:PS_Notify('You\'re not allowed to equip items when dead or spectating.')

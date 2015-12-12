@@ -14,7 +14,7 @@ http://www.badgercode.co.uk
 ##Includes
 * Adds more weapon spawns to the CS:S maps
 * Allows traitors to attach the default C4 weapon to innocent players
-* Pointshop, mapvote and ULX modifications
+* Pointshop modifications
 * Right-click menu for TTT: Adds ULX admin commands
   * addons/cmlua/lua/autorun/client/tttmenu.lua
 * Pre-round player list printing and post-round damage log printing (in console)
