@@ -23,11 +23,11 @@ local function CheckFamilySharing(ply)
             ply:SteamID64()
         ),
         
-        function(body)
-            body = util.JSONToTable(body)
+        function(rawJSONBody)
+            body = util.JSONToTable(rawJSONBody)
 
             if not body or not body.response or not body.response.lender_steamid then
-                error(string.format("FamilySharing: Invalid Steam API response for %s | %s\n", ply:Nick(), ply:SteamID()))
+                error(string.format("FamilySharing: Invalid Steam API response for %s | %s: \n\"rawJSONBody\"\n", ply:Nick(), ply:SteamID()))
             end
 
             local lender = body.response.lender_steamid
