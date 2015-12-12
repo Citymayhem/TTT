@@ -1,7 +1,0 @@
-Not really worth a branch on github:
-
-lua/ulx/xgui/maps.lua 
-	Inside maps.updateVoteMaps(), on line 84 I have changed
-		LocalPlayer():query( "ulx map" )
-	to
-		LocalPlayer():query( "ulx seeallmaps" )

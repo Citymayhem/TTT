@@ -1,5 +1,0 @@
-/lua/autorun/mapvote.lua
-Under MapVote.HasExtraVotePower(ply) add:
-        if ULib and ULib.ucl.query(ply,"mapvote_extra_power")then
-                return true
-        end

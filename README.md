@@ -6,34 +6,39 @@ http://www.citymayhem.net
 http://www.badgercode.co.uk  
 
 ##Credit
-* Santa hat- http://www.garrysmod.org/downloads/?a=view&id=85708
-* Ulysess Mod- https://github.com/Nayruden/Ulysses/
-* Mapvote- https://github.com/tyrantelf/gmod-mapvote
-* Pointshop- https://github.com/adamdburton/pointshop
-* Credit to [SilentK](http://github.com/vice655/ "SilentK's GitHub") for the AUG, Explosive Grenades, M4A1S, P90, Scar20, Tripmine, and for the original idea and stats for the Dual Elites.
-* Credit to TC224 for the original stats for the TMP, AK47, AWP and Pump Shotgun.  
-* Credit to Maccat for the idea of the MP5.  
 * Massive thanks to Dangerous Dan for adding weapon spawns to the maps for these new weapons.  
-* Mr. R for helping me with the kill icons  
+* Thanks to SilentK, TC224, Maccat and Mr. R for their help
+* Thanks to the rest of CityMayhem!
 
 
 ##Includes
-* Weapons- AK47, AUG, AWP, Dual Elites, Explosive Grenades, M4A1S, MP5, P90, Pump, Scar20, TMP, Tripmine  
-* Updated CS:S weapon spawns to include custom weapons (you need to delete the default spawns for this to work).
-* TTT Gamemode Modifications  
-* Pointshop, mapvote and ULX modifications
+* Adds more weapon spawns to the CS:S maps
+	* addons/cmlua/lua/maps/
+* Allows traitors to attach the default C4 weapon to innocent players
+* Pointshop modifications
+* Right-click menu for TTT: Adds ULX admin commands
+  * addons/cmlua/lua/autorun/client/tttmenu.lua
 * Pre-round player list printing and post-round damage log printing (in console)
+  * addons/cmlua/lua/autorun/client/printlog.lua
 * Legs (when you look down)
+  * addons/cmlua/lua/autorun/client/legmodels.lua
+* !Join command (opens up CityMayhem steam group)
+  * addons/cmlua/lua/autorun/server/joincommand.lua
+* Script for downloading custom content for maps which haven't packed them into the .bsp file 
+  * addons/cmlua/lua/autorun/server/mapResources.lua
+* Bans players who get around bans using family sharing
+  * addons/cmlua/lua/ulx/modules/sh/accountsharing.lua
 
 
 ##Installing
-* Download and install the following addons:
-  * Pointshop- https://github.com/adamdburton/pointshop
-  * Mapvote- https://github.com/tyrantelf/gmod-mapvote
-  * ULX and ULib- https://github.com/Nayruden/Ulysses/
-  * Spraymon- http://steamcommunity.com/sharedfiles/filedetails/?id=105463332
-* Maps can be found here- http://91.121.182.29/27016/garrysmod/maps/
-* Install the contents of this repository into your garrysmod directory.
-  * Some files and directories will need to be overwritten.
-* If you want to use the custom weapons and have them spawn on the CS:S maps:  
-  * Delete all the map spawns in /gamemodes/terrortown/content/maps/
+1. Download and install the following addons:
+  1. Pointshop- https://github.com/adamdburton/pointshop
+  2. Mapvote- https://github.com/willox/gmod-mapvote
+  3. ULX and ULib- https://github.com/Nayruden/Ulysses/
+  4. Spraymon- http://steamcommunity.com/sharedfiles/filedetails/?id=105463332
+2. Install the contents of this repository into your garrysmod directory.
+  1. Some files and directories will need to be overwritten.
+3. Delete all the map spawns in /gamemodes/terrortown/content/maps/
+4. Add your Steam API key to addons/cmlua/lua/ulx/modules/sh/accountsharing.lua
+	1. Replace APIKEYGOESHERE with it
+	2. See http://steamcommunity.com/dev/apikey

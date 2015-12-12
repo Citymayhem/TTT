@@ -1,8 +1,6 @@
 -- traitor equipment: c4 bomb
 
-if SERVER then
-   AddCSLuaFile( "shared.lua" )
-end
+AddCSLuaFile( )
 
 SWEP.HoldType			= "slam"
 
@@ -16,7 +14,8 @@ if CLIENT then
       desc  = "c4_desc"
    };
 
-   SWEP.Icon = "VGUI/ttt/icon_c4"
+   SWEP.Icon = "vgui/ttt/icon_c4"
+   SWEP.IconLetter = "I"
 end
 
 SWEP.Base = "weapon_tttbase"
@@ -50,19 +49,18 @@ SWEP.NoSights = true
 local throwsound = Sound( "Weapon_SLAM.SatchelThrow" )
 
 function SWEP:PrimaryAttack()
-   self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+   self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
    self:BombDrop()
 end
 
 function SWEP:SecondaryAttack()
-   self.Weapon:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+   self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
    self:BombStick()
 end
 
 -- mostly replicating HL2DM slam throw here
 function SWEP:BombDrop()
    if SERVER then
-      
       local ply = self.Owner
       if not IsValid(ply) then return end
 
@@ -71,7 +69,6 @@ function SWEP:BombDrop()
       local vsrc = ply:GetShootPos()
       local vang = ply:GetAimVector()
       local vvel = ply:GetVelocity()
-      
       local vthrow = vvel + vang * 200
 
       local bomb = ents.Create("ttt_c4")
@@ -93,7 +90,7 @@ function SWEP:BombDrop()
          local phys = bomb:GetPhysicsObject()
          if IsValid(phys) then
             phys:SetVelocity(vthrow)
-         end   
+         end
          self:Remove()
 
          self.Planted = true
@@ -103,8 +100,8 @@ function SWEP:BombDrop()
       ply:SetAnimation( PLAYER_ATTACK1 )
    end
 
-   self.Weapon:EmitSound(throwsound)
-   self.Weapon:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
+   self:EmitSound(throwsound)
+   self:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
 end
 
 -- again replicating slam, now its attach fn
@@ -115,10 +112,10 @@ function SWEP:BombStick()
 
       if self.Planted then return end
 
-      local ignore = {ply, self.Weapon}
+      local ignore = {ply, self}
       local spos = ply:GetShootPos()
       local epos = spos + ply:GetAimVector() * 80
-      --BCODE
+	  --BCODE
 		local tr = util.TraceLine({start=spos, endpos=epos, filter=ply})
 		local target = tr.Entity
 		if target:IsWorld() or (target:IsPlayer() and ply:IsTraitor() and !target:IsTraitor()) then

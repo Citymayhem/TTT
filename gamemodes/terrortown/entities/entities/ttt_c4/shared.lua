@@ -9,7 +9,7 @@ end
 
 if CLIENT then
    -- this entity can be DNA-sampled so we need some display info
-   ENT.Icon = "VGUI/ttt/icon_c4"
+   ENT.Icon = "vgui/ttt/icon_c4"
    ENT.PrintName = "C4"
 
    local GetPTranslation = LANG.GetParamTranslation
@@ -31,6 +31,7 @@ ENT.Model = Model("models/weapons/w_c4_planted.mdl")
 
 ENT.CanHavePrints = true
 ENT.CanUseKey = true
+ENT.Avoidable = true
 
 AccessorFunc( ENT, "thrower", "Thrower")
 
@@ -120,9 +121,9 @@ function ENT:WeldToGround(state)
       -- getgroundentity does not work for non-players
       -- so sweep ent downward to find what we're lying on
       local ignore = player.GetAll()
-      table.insert(ignore, self.Entity)
+      table.insert(ignore, self)
 
-      local tr = util.TraceEntity({start=self:GetPos(), endpos=self:GetPos() - Vector(0,0,16), filter=ignore, mask=MASK_SOLID}, self.Entity)
+      local tr = util.TraceEntity({start=self:GetPos(), endpos=self:GetPos() - Vector(0,0,16), filter=ignore, mask=MASK_SOLID}, self)
 
       -- Start by increasing weight/making uncarryable
       local phys = self:GetPhysicsObject()
@@ -148,7 +149,7 @@ function ENT:WeldToGround(state)
          -- Worst case, we are still uncarryable
       end
    else
-      constraint.RemoveConstraints(self.Entity, "Weld")
+      constraint.RemoveConstraints(self, "Weld")
       local phys = self:GetPhysicsObject()
       if IsValid(phys) then
          phys:EnableMotion(true)
@@ -185,7 +186,7 @@ function ENT:SphereDamage(dmgowner, center, radius)
             local dmginfo = DamageInfo()
             dmginfo:SetDamage(dmg)
             dmginfo:SetAttacker(dmgowner)
-            dmginfo:SetInflictor(self.Entity)
+            dmginfo:SetInflictor(self)
             dmginfo:SetDamageType(DMG_BLAST)
             dmginfo:SetDamageForce(center - ent:GetPos())
             dmginfo:SetDamagePosition(ent:GetPos())
@@ -215,7 +216,7 @@ function ENT:Explode(tr)
       end
 
       local dmgowner = self:GetThrower()
-      dmgowner = IsValid(dmgowner) and dmgowner or self.Entity
+      dmgowner = IsValid(dmgowner) and dmgowner or self
 
       local r_inner = 750
       local r_outer = self:GetRadius()
@@ -303,11 +304,14 @@ local MAX_MOVE_RANGE = 1000000 -- sq of 1000
 function ENT:Think()
    if not self:GetArmed() then return end
 
-   local curpos = self:GetPos()
-   if self.LastPos and self.LastPos:DistToSqr(curpos) > MAX_MOVE_RANGE then
-      self:Disarm(nil)
+   if SERVER then
+	   local curpos = self:GetPos()
+	   if self.LastPos and self.LastPos:DistToSqr(curpos) > MAX_MOVE_RANGE then
+		  self:Disarm(nil)
+		  return
+	   end
+	   self.LastPos = curpos
    end
-   self.LastPos = curpos
 
    local etime = self:GetExplodeTime()
    if self:GetArmed() and etime != 0 and etime < CurTime() then
@@ -354,19 +358,23 @@ function ENT:Think()
    end
 end
 
+function ENT:Defusable()
+	return self:GetArmed()
+end
+
 -- Timer configuration handlign
 
 if SERVER then
    -- Inform traitors about us
    function ENT:SendWarn(armed)
-      umsg.Start("c4_warn", GetTraitorFilter(true))
-      umsg.Short(self:EntIndex())
-      umsg.Bool(armed)
-      if armed then
-         umsg.Vector(self:GetPos())
-         umsg.Float(self:GetExplodeTime())
-      end
-      umsg.End()
+      net.Start("TTT_C4Warn")
+         net.WriteUInt(self:EntIndex(), 16)
+         net.WriteBit(armed)
+         if armed then
+            net.WriteVector(self:GetPos())
+            net.WriteFloat(self:GetExplodeTime())
+         end
+      net.Send(GetTraitorFilter(true))
    end
 
    function ENT:OnRemove()
@@ -452,9 +460,10 @@ if SERVER then
 
    function ENT:ShowC4Config(ply)
       -- show menu to player to configure or disarm us
-      umsg.Start("c4_config", ply)
-      umsg.Short(self:EntIndex())
-      umsg.End()
+	  net.Start("TTT_C4DisarmResult")
+         net.WriteUInt(idx, 15) -- it'll fit, trust me
+         net.WriteBit(result) -- this way we can squeeze this bit into 16
+      net.Send(ply)
    end
 
    local function ReceiveC4Config(ply, cmd, args)
@@ -485,10 +494,10 @@ if SERVER then
    concommand.Add("ttt_c4_config", ReceiveC4Config)
 
    local function SendDisarmResult(ply, idx, result)
-      umsg.Start("c4_disarm_result", ply)
-      umsg.Short(idx)
-      umsg.Bool(result)
-      umsg.End()
+      net.Start("TTT_C4DisarmResult")
+         net.WriteUInt(idx, 15) -- it'll fit, trust me
+         net.WriteBit(result) -- this way we can squeeze this bit into 16
+      net.Send(ply)
    end
 
    local function ReceiveC4Disarm(ply, cmd, args)
@@ -499,7 +508,7 @@ if SERVER then
       if not idx or not wire then return end
 
       local bomb = ents.GetByIndex(idx)
-      if IsValid(bomb) and bomb:GetArmed() then
+      if IsValid(bomb) and bomb:GetClass() == "ttt_c4" and not bomb.DisarmCausedExplosion and bomb:GetArmed() then
          if bomb:GetPos():Distance(ply:GetPos()) > 256 then
             return
          elseif bomb.SafeWires[wire] or ply:IsTraitor() or ply == bomb:GetOwner() then
@@ -608,6 +617,19 @@ if CLIENT then
                          weight = 0,
                          antialias = false
                       })
+					  
+	function ENT:GetTimerPos()
+	  local att = self:GetAttachment(self:LookupAttachment("controlpanel0_ur"))
+	  if att then
+		 return att
+	  else
+		 local ang = self:GetAngles()
+		 ang:RotateAroundAxis(self:GetUp(), -90)
+		 local pos = (self:GetPos() + self:GetForward() * 4.5 +
+					  self:GetUp() * 9.0 + self:GetRight() * 7.8)
+		 return { Pos = pos, Ang = ang }
+	  end
+   end
 
    local strtime = util.SimpleTime
    local max = math.max
@@ -615,9 +637,7 @@ if CLIENT then
       self:DrawModel()
 
       if self:GetArmed() then
-         local ang = self:GetAngles() ang:RotateAroundAxis(self:GetUp(),-90)
-         local angpos_ur = self:GetAttachment(self:LookupAttachment("controlpanel0_ur")) or
-		{Pos=self:GetPos()+self:GetForward()*4.5+self:GetUp()*8.8+self:GetRight()*7.8,Ang=ang}
+         local angpos_ur = self:GetTimerPos()
 
          if angpos_ur then
             cam.Start3D2D(angpos_ur.Pos, angpos_ur.Ang, 0.2)
