@@ -305,12 +305,12 @@ function ENT:Think()
    if not self:GetArmed() then return end
 
    if SERVER then
-	   local curpos = self:GetPos()
-	   if self.LastPos and self.LastPos:DistToSqr(curpos) > MAX_MOVE_RANGE then
-		  self:Disarm(nil)
-		  return
-	   end
-	   self.LastPos = curpos
+      local curpos = self:GetPos()
+      if self.LastPos and self.LastPos:DistToSqr(curpos) > MAX_MOVE_RANGE then
+         self:Disarm(nil)
+         return
+      end
+      self.LastPos = curpos
    end
 
    local etime = self:GetExplodeTime()
@@ -460,9 +460,8 @@ if SERVER then
 
    function ENT:ShowC4Config(ply)
       -- show menu to player to configure or disarm us
-	  net.Start("TTT_C4DisarmResult")
-         net.WriteUInt(idx, 15) -- it'll fit, trust me
-         net.WriteBit(result) -- this way we can squeeze this bit into 16
+      net.Start("TTT_C4Config")
+         net.WriteUInt(self:EntIndex(), 16)
       net.Send(ply)
    end
 
@@ -617,18 +616,19 @@ if CLIENT then
                          weight = 0,
                          antialias = false
                       })
-					  
-	function ENT:GetTimerPos()
-	  local att = self:GetAttachment(self:LookupAttachment("controlpanel0_ur"))
-	  if att then
-		 return att
-	  else
-		 local ang = self:GetAngles()
-		 ang:RotateAroundAxis(self:GetUp(), -90)
-		 local pos = (self:GetPos() + self:GetForward() * 4.5 +
-					  self:GetUp() * 9.0 + self:GetRight() * 7.8)
-		 return { Pos = pos, Ang = ang }
-	  end
+
+
+   function ENT:GetTimerPos()
+      local att = self:GetAttachment(self:LookupAttachment("controlpanel0_ur"))
+      if att then
+         return att
+      else
+         local ang = self:GetAngles()
+         ang:RotateAroundAxis(self:GetUp(), -90)
+         local pos = (self:GetPos() + self:GetForward() * 4.5 +
+                      self:GetUp() * 9.0 + self:GetRight() * 7.8)
+         return { Pos = pos, Ang = ang }
+      end
    end
 
    local strtime = util.SimpleTime
@@ -638,7 +638,6 @@ if CLIENT then
 
       if self:GetArmed() then
          local angpos_ur = self:GetTimerPos()
-
          if angpos_ur then
             cam.Start3D2D(angpos_ur.Pos, angpos_ur.Ang, 0.2)
             draw.DrawText(strtime(max(0, self:GetExplodeTime() - CurTime()), "%02i:%02i"), "C4ModelTimer", -1, 1, COLOR_RED, TEXT_ALIGN_RIGHT)
