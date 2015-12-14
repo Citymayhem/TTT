@@ -16,8 +16,6 @@ hook.Add("TTTScoreboardMenu","cmscoreboardcontextmenu", function(menu)
 	local ply = LocalPlayer()
 	local target = menu.Player
 	
-	if not IsValid(target) then return end
-	
 	PlayClickSound()
 	
 	AddGeneralSection(menu)
