@@ -16,8 +16,6 @@ hook.Add("TTTScoreboardMenu","cmscoreboardcontextmenu", function(menu)
 	local ply = LocalPlayer()
 	local target = menu.Player
 	
-	if not IsValid(target) then return end
-	
 	PlayClickSound()
 	
 	AddGeneralSection(menu)
@@ -93,13 +91,13 @@ function AddKickSubMenu(menu)
 	if kickSubMenu == nil then return end
 	
 	AddMenuOption(kickSubMenu, "AFK", "", function(menu) 
-		TryRunPlayerMenuOption(target, function(target) RunConsoleCommand("ulx", "kick", target:Nick(), "AFK") end, onPlayerDisconnect)
+		TryRunPlayerMenuOption(menu.Player, function(target) RunConsoleCommand("ulx", "kick", target:Nick(), "AFK") end, onPlayerDisconnect)
 	end)
 	AddMenuOption(kickSubMenu, "Final warning", "", function(menu)
-		TryRunPlayerMenuOption(target, function(target) RunConsoleCommand("ulx", "kick", target:Nick(), "Final warning") end, onPlayerDisconnect)
+		TryRunPlayerMenuOption(menu.Player, function(target) RunConsoleCommand("ulx", "kick", target:Nick(), "Final warning") end, onPlayerDisconnect)
 	end)
 	AddMenuOption(kickSubMenu, "Other (specify)", "icon16/textfield.png", function(menu)
-		TryRunPlayerMenuOption(target, function(target) OpenKickReasonDialog(target, target:Nick(), onPlayerDisconnect) end, onPlayerDisconnect)
+		TryRunPlayerMenuOption(menu.Player, function(target) OpenKickReasonDialog(target, target:Nick(), onPlayerDisconnect) end, onPlayerDisconnect)
 	end)
 end
 
