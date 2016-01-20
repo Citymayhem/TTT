@@ -47,21 +47,35 @@ function ShowChatWindow()
 	local textInput = vgui.Create("DTextEntry", chatWindow)
 	textInput:SetPos(5, 375)
 	textInput:SetSize(390, 20)
+	textInput:SetUpdateOnType(true)
 	textInput.OnEnter = function(self)
-		local message = LocalPlayer():GetName() .. ": " .. self:GetValue()
-		local chatMessage = CreateChatMessage(message)
+		local message = self:GetValue()
+		
+		if(message:len() > 500) then 
+			self:SetText(message:sub(0, 499))
+		end
+		
+		local chatMessage = LocalPlayer():GetName() .. ": " .. message
+		local chatBoxMessage = CreateChatMessage(chatMessage)
 		
 		if anyMessages then
 			AddVerticalDivider(messageList)
 		end
 		anyMessages = true
 		
-		messageList:Add(chatMessage)
+		messageList:Add(chatBoxMessage)
 		
-		chatContainer:ScrollToChild(chatMessage)
+		chatContainer:ScrollToChild(chatBoxMessage)
 		
 		self:SetText("")
 		self:RequestFocus()
+	end
+	textInput.OnValueChange = function(newValue)
+		local oldValue = self:GetValue()
+		print("Old: " .. oldValue .. ", new: " .. newValue)
+		--if(newValue:len() > 500) then
+		--	self:SetText()
+		--end
 	end
 	
 	textInput:RequestFocus()
