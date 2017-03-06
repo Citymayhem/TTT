@@ -1,6 +1,0 @@
-This anti-cheat uses Pablo's screengrab
-	http://facepunch.com/showthread.php?t=1286766
-	Allows you to spectate people, except it should show you exactly what's on their screen.
-
-Anticheat Quack Anti Cheat made by zero the fallen
-	https://www.facepunch.com/showthread.php?t=1379704
