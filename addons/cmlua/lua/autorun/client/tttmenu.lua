@@ -17,8 +17,7 @@ hook.Add("TTTScoreboardMenu","cmscoreboardcontextmenu", function(menu)
 
     -- Add sections here
     AddMenuSection(menuSections, BuildGeneralSection())
-    AddMenuSection(menuSections, BuildSpectateSection())
-    AddMenuSection(menuSections, BuildTeleportSection())
+    AddMenuSection(menuSections, BuildGeneralAdminSection())
     AddMenuSection(menuSections, BuildSlaySection())
     AddMenuSection(menuSections, BuildChatSection())
     AddMenuSection(menuSections, BuildKickSection(menu.Player))
@@ -40,130 +39,147 @@ Builds the right click menu
 
 function BuildGeneralSection()
 
-    local section = {}
-    table.insert(section, { text = "Copy Name", 
-                            icon = "icon16/user_edit.png", 
-                            onClick = function(target) SetClipboardText(target:Nick()) end
-                            })
+    local menuItem = {
+        text = "Information",
+        icon = "icon16/user.png",
+        subMenu = {}
+    }
 
-    table.insert(section, { text = "Copy SteamID", 
-                            icon = "icon16/tag_blue.png", 
-                            onClick = function(target) SetClipboardText(target:SteamID()) end
-                            })
+    table.insert(menuItem.subMenu, { text = "Copy Name",
+                                     icon = "icon16/user_edit.png",
+                                     onClick = function(target) SetClipboardText(target:Nick()) end
+                                     })
 
-    table.insert(section, { text = "Open Profile", 
-                            icon = "icon16/world.png", 
-                            onClick = function(target) target:ShowProfile() end
-                            })
-    return section
+    table.insert(menuItem.subMenu, { text = "Copy SteamID",
+                                     icon = "icon16/tag_blue.png",
+                                     onClick = function(target) SetClipboardText(target:SteamID()) end
+                                     })
+
+    table.insert(menuItem.subMenu, { text = "Open Profile",
+                                     icon = "icon16/world.png",
+                                     onClick = function(target) target:ShowProfile() end
+                                     })
+    return { options = { menuItem }, addSpacerAfter = true }
 end
 
 
-function BuildSpectateSection()
+function BuildGeneralAdminSection()
 
-    local section = {}
+    local menuItem = {
+        text = "General Administration",
+        icon = "icon16/shield.png",
+        subMenu = {}
+    }
     
     if PlayerHasRequiredPermission("ulx spectate") then
-        table.insert(section, { text = "Spectate", 
-                                icon = "icon16/zoom.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","spectate", target:Nick()) end
-                                })
+        table.insert(menuItem.subMenu, { text = "Spectate",
+                                         icon = "icon16/zoom.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","spectate", target:Nick()) end
+                                         })
     end
 
     if PlayerHasRequiredPermission("ulx fspec") then
-        table.insert(section, { text = "Force Spectate", 
-                                icon = "icon16/zoom.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","fspec", target:Nick()) end
-                                })
+        table.insert(menuItem.subMenu, { text = "Force Spectate",
+                                         icon = "icon16/zoom.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","fspec", target:Nick()) end
+                                         })
     end
-
-    return section
-end
-
-
-function BuildTeleportSection()
-
-    local section = {}
     
     if PlayerHasRequiredPermission("ulx goto") then
-        table.insert(section, { text = "Teleport To", 
-                                icon = "icon16/arrow_up.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","goto", target:Nick()) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Teleport To",
+                                         icon = "icon16/arrow_up.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","goto", target:Nick()) end
+                                         })
     end
 
     if PlayerHasRequiredPermission("ulx teleport") then
-        table.insert(section, { text = "Bring (To where you're aiming)", 
-                                icon = "icon16/arrow_up.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","teleport", target:Nick()) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Bring (To where you're aiming)",
+                                         icon = "icon16/arrow_up.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","teleport", target:Nick()) end
+                                         })
     end
-    return section
+
+    return { options = { menuItem } }
 end
 
 
 function BuildSlaySection()
 
-    local section = {}
+    local menuItem = {
+        text = "Slaying",
+        icon = "icon16/user_red.png",
+        subMenu = {}
+    }
     
     if PlayerHasRequiredPermission("ulx slay") then
-        table.insert(section, { text = "Slay", 
-                                icon = "icon16/user_red.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","slay", target:Nick()) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Slay",
+                                         icon = "icon16/user_red.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","slay", target:Nick()) end
+                                         })
     end
 
     if PlayerHasRequiredPermission("ulx slaynr") then
-        table.insert(section, { text = "Slay Next Round(s)", 
-                                icon = "icon16/clock_red.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","slaynr", target:Nick()) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Slay Next Round(s)",
+                                         icon = "icon16/clock_red.png",
+                                         onClick = function(target) OpenSlayNRDialog(target) end
+                                         })
     end
-    
-    return section
+
+    if PlayerHasRequiredPermission("ulx rslaynr") then
+        table.insert(menuItem.subMenu, { text = "Remove Next Round Slay(s)",
+                                         icon = "icon16/clock_stop.png",
+                                         onClick = function(target) OpenRSlayNRDialog(target) end
+                                         })
+    end
+
+    return { options = { menuItem } }
 end
 
 
 function BuildChatSection()
 
-    local section = {}
+    local menuItem = {
+        text = "Chat Administration",
+        icon = "icon16/comments.png",
+        subMenu = {}
+    }
     
     if PlayerHasRequiredPermission("ulx psay") then
-        table.insert(section, { text = "Private Message", 
-                                icon = "icon16/user_comment.png", 
-                                onClick = function(target) OpenPrivateMessageDialog(target) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Private Message",
+                                         icon = "icon16/user_comment.png",
+                                         onClick = function(target) OpenPrivateMessageDialog(target) end
+                                         })
     end
 
     if PlayerHasRequiredPermission("ulx mute") then
-        table.insert(section, { text = "Mute", 
-                                icon = "icon16/comment_delete.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","mute", target:Nick()) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Mute",
+                                         icon = "icon16/comment_delete.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","mute", target:Nick()) end
+                                         })
     end
 
     if PlayerHasRequiredPermission("ulx unmute") then
-        table.insert(section, { text = "Unmute", 
-                                icon = "icon16/comment_add.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","unmute", target:Nick()) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Unmute",
+                                         icon = "icon16/comment_add.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","unmute", target:Nick()) end
+                                         })
     end
 
     if PlayerHasRequiredPermission("ulx gag") then
-        table.insert(section, { text = "Gag", 
-                                icon = "icon16/sound_mute.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","gag", target:Nick()) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Gag",
+                                         icon = "icon16/sound_mute.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","gag", target:Nick()) end
+                                         })
     end
 
     if PlayerHasRequiredPermission("ulx ungag") then
-        table.insert(section, { text = "Ungag", 
-                                icon = "icon16/sound_low.png", 
-                                onClick = function(target) RunConsoleCommand("ulx","ungag", target:Nick()) end 
-                                })
+        table.insert(menuItem.subMenu, { text = "Ungag",
+                                         icon = "icon16/sound_low.png",
+                                         onClick = function(target) RunConsoleCommand("ulx","ungag", target:Nick()) end
+                                         })
     end
     
-    return section
+    return { options = { menuItem } }
 end
 
 
@@ -178,29 +194,29 @@ function BuildKickSection(target)
     local targetSteamId = target:SteamID()
     local onPlayerDisconnect = function() LocalPlayer():ChatPrint(targetName .. " (" .. targetSteamId .. ") disconnected before you could kick them.") end
 
-    local kickMenuItem = {
+    local menuItem = {
         text = "Kick",
         icon = "icon16/door_in.png",
         subMenu = {}
     }
 
-    table.insert(kickMenuItem.subMenu, { text = "AFK",
-                                         onClick = function(target) RunConsoleCommand("ulx", "kick", targetName, "AFK") end,
-                                         onFail = onPlayerDisconnect
-                                         })
+    table.insert(menuItem.subMenu, { text = "AFK",
+                                     onClick = function(target) RunConsoleCommand("ulx", "kick", targetName, "AFK") end,
+                                     onFail = onPlayerDisconnect
+                                     })
 
-    table.insert(kickMenuItem.subMenu, { text = "Final warning",
-                                         onClick = function(target) RunConsoleCommand("ulx", "kick", targetName, "Final warning") end,
-                                         onFail = onPlayerDisconnect
-                                         })
+    table.insert(menuItem.subMenu, { text = "Final warning",
+                                     onClick = function(target) RunConsoleCommand("ulx", "kick", targetName, "Final warning") end,
+                                     onFail = onPlayerDisconnect
+                                     })
 
-    table.insert(kickMenuItem.subMenu, { text = "Other (specify)",
-                                         icon = "icon16/textfield.png",
-                                         onClick = function(target) OpenKickReasonDialog(target, targetName, onPlayerDisconnect) end,
-                                         onFail = onPlayerDisconnect
-                                         })
+    table.insert(menuItem.subMenu, { text = "Other (specify)",
+                                     icon = "icon16/textfield.png",
+                                     onClick = function(target) OpenKickReasonDialog(target, targetName, onPlayerDisconnect) end,
+                                     onFail = onPlayerDisconnect
+                                     })
 
-    return { kickMenuItem }
+    return { options = { menuItem } }
 end
 
 
@@ -213,19 +229,19 @@ function BuildBanSection(target)
     -- Even if the player disconnects, we want the ban to succeed
     local targetName = target:Nick()
     local targetSteamId = target:SteamID()
-    local banMenuItem = {
+    local menuItem = {
         text = "Ban",
         icon = "icon16/stop.png",
         subMenu = {}
     }
 
-    table.insert(banMenuItem.subMenu, { text = "Other (specify)",
-                                        icon = "icon16/textfield.png",
-                                        onClick = function(target) OpenBanPlayerDialog(targetName, targetSteamId) end,
-                                        disableClickTargetValidation = true
-                                        })
+    table.insert(menuItem.subMenu, { text = "Other (specify)",
+                                     icon = "icon16/textfield.png",
+                                     onClick = function(target) OpenBanPlayerDialog(targetName, targetSteamId) end,
+                                     disableClickTargetValidation = true
+                                     })
 
-    return { banMenuItem }
+    return { options = { menuItem } }
 end
 
 
@@ -241,13 +257,15 @@ Render functions
 
 function RenderMenuSections(menu, menuSections)
 
+    local addSpacer = false
     for sectionKey, section in pairs(menuSections) do
-        local isFirstSection = sectionKey == 1
-        if not isFirstSection then
+        if addSpacer then
             menu:AddSpacer()
         end
+
+        addSpacer = section.addSpacerAfter
         
-        RenderMenuSectionOptions(menu, menu.Player, section)
+        RenderMenuSectionOptions(menu, menu.Player, section.options)
     end
 
 end
@@ -330,11 +348,21 @@ Utility functions
 --]]
 
 function AddMenuSection(menu, section)
-    local isSectionEmpty = next(section) == nil
-    
-    if not isSectionEmpty then
-        table.insert(menu, section)
+    local isSectionEmpty = next(section.options) == nil
+    if isSectionEmpty then return end
+
+    for k, option in pairs(section.options) do
+        -- Remove options with empty submenus
+        local optionHasSubmenu = option.subMenu ~= nil
+        if optionHasSubmenu and (next(option.subMenu) == nil) then
+            section.options[k] = nil
+        end
     end
+
+    isSectionEmpty = next(section.options) == nil
+    if isSectionEmpty then return end
+
+    table.insert(menu, section)
 end
 
 
@@ -357,10 +385,25 @@ Dialog Functions
 ===================================================================================================
 --]]
 function OpenPrivateMessageDialog(target)
-    local targetName = target:Nick()
-    ShowMessagePanel("Private Message " .. targetName, "Enter a private message to send to " .. targetName, function(message)
+    ShowMessagePanel("Private Message", "Enter a private message to send to " .. target:Nick(), function(message)
         if IsValid(target) then
             RunConsoleCommand("ulx", "psay", target:Nick(), message)
+        end
+    end)
+end
+
+function OpenSlayNRDialog(target)
+    ShowMessagePanel("Slay", "Number of rounds to slay " .. target:Nick() .. ": ", function(numSlays)
+        if IsValid(target) then
+            RunConsoleCommand("ulx", "slaynr", target:Nick(), numSlays)
+        end
+    end)
+end
+
+function OpenRSlayNRDialog(target)
+    ShowMessagePanel("Slay", "Number of round slays to remove for " .. target:Nick() .. ": ", function(numSlays)
+        if IsValid(target) then
+            RunConsoleCommand("ulx", "rslaynr", target:Nick(), numSlays)
         end
     end)
 end
